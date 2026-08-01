@@ -2,6 +2,8 @@ const quotationService = require('../services/quotationService');
 const { sendSuccess } = require('../utils/responseFormatter');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
 
+const { ROLES } = require('../constants/roles');
+
 class QuotationController {
   async create(req, res, next) {
     try {
@@ -14,7 +16,11 @@ class QuotationController {
 
   async getAll(req, res, next) {
     try {
-      const result = await quotationService.getQuotations(req.query);
+      const query = { ...req.query };
+      if (req.user.role === ROLES.SALES) {
+        query.createdBy = req.user._id;
+      }
+      const result = await quotationService.getQuotations(query);
       return sendSuccess(res, 'Quotations fetched successfully.', result.quotations, {
         page: result.page,
         limit: result.limit,
