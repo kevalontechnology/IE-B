@@ -13,6 +13,11 @@ const ShippingLine = require('../models/ShippingLine');
 const Factory = require('../models/Factory');
 const Customer = require('../models/Customer');
 const Product = require('../models/Product');
+const PaymentTerm = require('../models/PaymentTerm');
+const ProductCategory = require('../models/ProductCategory');
+const ExportTerm = require('../models/ExportTerm');
+const HsnCode = require('../models/HsnCode');
+const ContainerQuantity = require('../models/ContainerQuantity');
 const { ROLES, USER_STATUS } = require('../constants/roles');
 
 const seedData = async () => {
@@ -33,11 +38,9 @@ const seedData = async () => {
         mobile: '+919999988888',
         password: process.env.ADMIN_INITIAL_PASSWORD || 'Admin@123456',
         role: ROLES.ADMIN,
-        status: USER_STATUS.APPROVED, // Admin is approved by default
+        status: USER_STATUS.APPROVED,
       });
-      console.log(`✅ Admin Account Created: ${adminEmail} / ${process.env.ADMIN_INITIAL_PASSWORD || 'Admin@123456'}`);
-    } else {
-      console.log(`ℹ️ Admin Account already exists: ${adminEmail}`);
+      console.log(`✅ Admin Account Created: ${adminEmail}`);
     }
 
     // 2. Seed Default Company Master
@@ -71,7 +74,75 @@ const seedData = async () => {
       console.log('✅ Company Master Created');
     }
 
-    // 3. Seed Default Countries
+    // 3. Seed Payment Terms Master
+    const defaultPaymentTerms = [
+      { name: 'LC At Sight', description: 'Letter of Credit at Sight' },
+      { name: 'Advance Payment', description: '100% Advance Payment TT' },
+      { name: '30 Days', description: '30 Days Net' },
+      { name: '45 Days', description: '45 Days Net' },
+      { name: '60 Days', description: '60 Days Net' },
+      { name: '90 Days', description: '90 Days Net' },
+      { name: '120 Days Against BL', description: '120 Days Against Bill of Lading' },
+      { name: 'CAD', description: 'Cash Against Documents' },
+    ];
+    for (const pt of defaultPaymentTerms) {
+      await PaymentTerm.updateOne({ name: pt.name }, { ...pt, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ Payment Terms Master Seeded');
+
+    // 4. Seed Product Categories Master
+    const defaultCategories = [
+      { categoryName: 'Sanitary Ware', description: 'Ceramic Sanitary Ware Products' },
+      { categoryName: 'Tiles', description: 'Vitrified and Ceramic Tiles' },
+      { categoryName: 'Wash Basin', description: 'Pedestal and Tabletop Wash Basins' },
+      { categoryName: 'Accessories', description: 'Bathroom & Hardware Accessories' },
+      { categoryName: 'Fittings', description: 'CP Fittings and Valves' },
+      { categoryName: 'Agro Commodities', description: 'Agricultural Export Products' },
+    ];
+    for (const cat of defaultCategories) {
+      await ProductCategory.updateOne({ categoryName: cat.categoryName }, { ...cat, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ Product Categories Master Seeded');
+
+    // 5. Seed Export Terms Master
+    const defaultExportTerms = [
+      { term: 'FOB', description: 'Free On Board (Port of Loading)' },
+      { term: 'CIF', description: 'Cost, Insurance and Freight' },
+      { term: 'CFR', description: 'Cost and Freight' },
+      { term: 'EXW', description: 'Ex Works (Factory Gate)' },
+      { term: 'DAP', description: 'Delivered At Place' },
+      { term: 'DDP', description: 'Delivered Duty Paid' },
+    ];
+    for (const et of defaultExportTerms) {
+      await ExportTerm.updateOne({ term: et.term }, { ...et, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ Export Terms Master Seeded');
+
+    // 6. Seed HSN Codes Master
+    const defaultHsnCodes = [
+      { hsnCode: '10063020', gstPercentage: 5, description: 'Basmati Rice' },
+      { hsnCode: '69101000', gstPercentage: 18, description: 'Ceramic Sinks, Wash Basins & Sanitary Fixtures' },
+      { hsnCode: '69072100', gstPercentage: 18, description: 'Unglazed Ceramic Flags and Paving, Hearth or Wall Tiles' },
+    ];
+    for (const hsn of defaultHsnCodes) {
+      await HsnCode.updateOne({ hsnCode: hsn.hsnCode }, { ...hsn, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ HSN Codes Master Seeded');
+
+    // 7. Seed Container Quantities Master
+    const defaultContainerQuantities = [
+      { quantityName: '1 x 20 FT', description: 'Single 20 Foot Standard Container' },
+      { quantityName: '1 x 40 FT', description: 'Single 40 Foot Standard Container' },
+      { quantityName: '2 x 20 FT', description: 'Two 20 Foot Standard Containers' },
+      { quantityName: '2 x 40 FT', description: 'Two 40 Foot Standard Containers' },
+      { quantityName: '1 x 40 HC', description: 'Single 40 Foot High Cube Container' },
+    ];
+    for (const cq of defaultContainerQuantities) {
+      await ContainerQuantity.updateOne({ quantityName: cq.quantityName }, { ...cq, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ Container Quantities Master Seeded');
+
+    // 8. Seed Countries & Currencies
     const defaultCountries = [
       { name: 'United States', code: 'US', currencyCode: 'USD' },
       { name: 'United Kingdom', code: 'GB', currencyCode: 'GBP' },
@@ -80,13 +151,10 @@ const seedData = async () => {
       { name: 'Australia', code: 'AU', currencyCode: 'AUD' },
       { name: 'India', code: 'IN', currencyCode: 'INR' },
     ];
-
     for (const c of defaultCountries) {
       await Country.updateOne({ name: c.name }, c, { upsert: true });
     }
-    console.log('✅ Countries Seeded');
 
-    // 4. Seed Default Currencies
     const defaultCurrencies = [
       { code: 'USD', name: 'US Dollar', symbol: '$', exchangeRateToINR: 83.5 },
       { code: 'EUR', name: 'Euro', symbol: '€', exchangeRateToINR: 90.2 },
@@ -94,13 +162,11 @@ const seedData = async () => {
       { code: 'AED', name: 'UAE Dirham', symbol: 'AED', exchangeRateToINR: 22.7 },
       { code: 'INR', name: 'Indian Rupee', symbol: '₹', exchangeRateToINR: 1.0 },
     ];
-
     for (const curr of defaultCurrencies) {
       await Currency.updateOne({ code: curr.code }, curr, { upsert: true });
     }
-    console.log('✅ Currencies Seeded');
 
-    // 5. Seed Ports & Shipping Lines
+    // 9. Seed Ports & Shipping Lines
     const defaultPorts = [
       { portName: 'Jawaharlal Nehru Port (JNPT / Nhava Sheva)', portCode: 'INNSA', country: 'India', type: 'Loading' },
       { portName: 'Mundra Port', portCode: 'INMUN', country: 'India', type: 'Loading' },
@@ -108,7 +174,6 @@ const seedData = async () => {
       { portName: 'Port of Hamburg', portCode: 'DEHAM', country: 'Germany', type: 'Discharge' },
       { portName: 'Port of New York / New Jersey', portCode: 'USNYC', country: 'United States', type: 'Discharge' },
     ];
-
     for (const p of defaultPorts) {
       await Port.updateOne({ portCode: p.portCode }, p, { upsert: true });
     }
@@ -120,65 +185,11 @@ const seedData = async () => {
       { name: 'Hapag-Lloyd', code: 'HLCU' },
       { name: 'ONE (Ocean Network Express)', code: 'ONEY' },
     ];
-
     for (const sl of defaultShippingLines) {
       await ShippingLine.updateOne({ name: sl.name }, sl, { upsert: true });
     }
 
-    // 6. Seed Sample Factory
-    let factory = await Factory.findOne({});
-    if (!factory) {
-      factory = await Factory.create({
-        factoryName: 'Global Manufacturing Unit 1',
-        gst: '27AAAAA0000A1Z5',
-        address: 'Plot 45, MIDC Industrial Area, Taloja, Navi Mumbai - 410208',
-      });
-    }
-
-    // 7. Seed Sample Customer & Product
-    let customer = await Customer.findOne({});
-    if (!customer) {
-      await Customer.create({
-        customerName: 'John Smith',
-        company: 'Apex Global Imports Inc',
-        country: 'United States',
-        gst: 'N/A',
-        email: 'john@apexglobal.com',
-        phone: '+1 415 555 0199',
-        address: {
-          street: '500 Market Street, Suite 400',
-          city: 'San Francisco',
-          state: 'CA',
-          country: 'United States',
-          postalCode: '94105',
-        },
-        notifyParty: 'Apex Logistics LLC, San Francisco',
-        paymentTerms: 'LC at Sight',
-        currency: 'USD',
-        createdBy: admin._id,
-      });
-      console.log('✅ Sample Customer Created');
-    }
-
-    let product = await Product.findOne({});
-    if (!product) {
-      await Product.create({
-        productName: 'Organic Premium Basmati Rice (1121 XL)',
-        hsn: '10063020',
-        category: 'Agro Commodities',
-        description: 'Extra Long Grain Organic Rice, 8.35mm average grain length',
-        unit: 'KGS',
-        weight: 1.0,
-        grossWeight: 1.02,
-        packing: '25 KG Non-Woven Poly Bags',
-        defaultRate: 1.45,
-        currency: 'USD',
-        createdBy: admin._id,
-      });
-      console.log('✅ Sample Product Created');
-    }
-
-    console.log('✨ All Seed Data Inserted Successfully!');
+    console.log('✨ All Master Datasets & Seed Records Created Successfully!');
   } catch (err) {
     console.error('❌ Seeding Error:', err);
   }

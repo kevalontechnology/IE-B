@@ -56,12 +56,38 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // API Version 1 Routes
 app.use('/api/v1', routes);
 
-// Base Health Check
+// Base Health Check & Monitoring Endpoints
 app.get('/', (req, res) => {
   res.json({
     status: 'Active',
     system: 'Enterprise Export CRM API v1.0',
     timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'UP',
+    database: mongoose.connection.readyState === 1 ? 'CONNECTED' : 'DISCONNECTED',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/version', (req, res) => {
+  res.json({
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    apiVersion: 'v1',
+  });
+});
+
+app.get('/system-info', (req, res) => {
+  res.json({
+    nodeVersion: process.version,
+    memoryUsage: process.memoryUsage(),
+    platform: process.platform,
+    arch: process.arch,
   });
 });
 
