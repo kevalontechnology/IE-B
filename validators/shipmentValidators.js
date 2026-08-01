@@ -1,0 +1,68 @@
+const Joi = require('joi');
+
+const shipmentItemSchema = Joi.object({
+  product: Joi.string().required(),
+  productName: Joi.string().required(),
+  hsn: Joi.string().required(),
+  description: Joi.string().allow('', null),
+  unit: Joi.string().default('KGS'),
+  quantity: Joi.number().positive().required(),
+  rate: Joi.number().min(0).required(),
+  discount: Joi.number().min(0).default(0),
+  amount: Joi.number().min(0).required(),
+  netWeight: Joi.number().min(0).default(0),
+  grossWeight: Joi.number().min(0).default(0),
+  packages: Joi.number().min(1).default(1),
+  packingType: Joi.string().default('Carton Box'),
+});
+
+const shipmentSchema = Joi.object({
+  invoiceNumber: Joi.string().trim().required(),
+  invoiceDate: Joi.date().default(Date.now),
+  quotation: Joi.string().allow(null, ''),
+  customer: Joi.string().required(),
+  customerDetails: Joi.object({
+    customerName: Joi.string().required(),
+    company: Joi.string().required(),
+    country: Joi.string().required(),
+    gst: Joi.string().allow('', null),
+    address: Joi.string().required(),
+    notifyParty: Joi.string().allow('', null),
+    paymentTerms: Joi.string().default('LC at Sight'),
+    currency: Joi.string().default('USD'),
+  }).required(),
+  items: Joi.array().items(shipmentItemSchema).min(1).required(),
+  shippingDetails: Joi.object({
+    containerNumber: Joi.string().trim().required(),
+    containerSize: Joi.string().default('20FT Standard'),
+    sealNumber: Joi.string().trim().required(),
+    electronicSealNumber: Joi.string().allow('', null),
+    totalPackages: Joi.number().min(1).required(),
+    packageType: Joi.string().default('Carton Boxes'),
+    totalNetWeight: Joi.number().min(0).required(),
+    totalGrossWeight: Joi.number().min(0).required(),
+    vgmWeight: Joi.number().min(0).required(),
+    weighBridgeName: Joi.string().allow('', null),
+    portOfLoading: Joi.string().required(),
+    portOfDischarge: Joi.string().required(),
+    shippingLine: Joi.string().required(),
+    blNumber: Joi.string().allow('', null),
+    vesselName: Joi.string().allow('', null),
+    etd: Joi.date().allow(null, ''),
+    eta: Joi.date().allow(null, ''),
+    factory: Joi.string().allow(null, ''),
+    currency: Joi.string().default('USD'),
+    exchangeRate: Joi.number().positive().default(83.5),
+    incoterms: Joi.string().default('FOB'),
+    lutNumber: Joi.string().allow('', null),
+  }).required(),
+  financials: Joi.object({
+    subTotal: Joi.number().min(0).required(),
+    discountTotal: Joi.number().min(0).default(0),
+    grandTotal: Joi.number().min(0).required(),
+    grandTotalINR: Joi.number().min(0).required(),
+  }).required(),
+  status: Joi.string().valid('Draft', 'Pending Logistics', 'Shipped', 'Completed', 'Cancelled').default('Pending Logistics'),
+});
+
+module.exports = { shipmentSchema };
