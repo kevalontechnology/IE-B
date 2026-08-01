@@ -4,6 +4,7 @@ const softDeletePlugin = require('../utils/softDeletePlugin');
 const productSchema = new mongoose.Schema(
   {
     productName: { type: String, required: true, trim: true, index: true },
+    sku: { type: String, default: null, sparse: true, index: true },
     hsn: { type: String, required: true, trim: true, index: true },
     category: { type: String, default: 'General', trim: true },
     description: { type: String, default: '' },

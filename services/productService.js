@@ -1,9 +1,14 @@
 const productRepo = require('../repositories/productRepo');
+const sequenceService = require('./sequenceService');
 const { createAuditLog } = require('../middleware/auditMiddleware');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
 
 class ProductService {
   async createProduct(data, req) {
+    if (!data.sku) {
+      data.sku = await sequenceService.getNextSequence('SKU', 'SKU-');
+    }
+
     const existing = await productRepo.findByHsnOrName(data.hsn, data.productName);
     if (existing) {
       const error = new Error(`Product with name '${data.productName}' or HSN '${data.hsn}' already exists.`);

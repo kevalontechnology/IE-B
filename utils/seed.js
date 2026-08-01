@@ -26,13 +26,16 @@ const seedData = async () => {
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB for Seeding...');
 
-    // Drop legacy non-sparse shipmentNumber index if present
+    // Drop legacy non-sparse indexes if present
     try {
       await mongoose.connection.collection('shipments').dropIndex('shipmentNumber_1');
       console.log('Cleared legacy shipmentNumber index');
-    } catch (e) {
-      // Ignore if index doesn't exist
-    }
+    } catch (e) {}
+
+    try {
+      await mongoose.connection.collection('products').dropIndex('sku_1');
+      console.log('Cleared legacy sku index');
+    } catch (e) {}
 
     // 1. Seed Admin User
     const adminEmail = process.env.ADMIN_INITIAL_EMAIL || 'admin@exportcrm.com';
