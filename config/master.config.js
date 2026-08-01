@@ -82,6 +82,23 @@ const MASTER_CONFIG = {
       { model: 'Shipment', path: 'shippingDetails.containerQuantity' },
     ],
   },
+  units: {
+    modelName: 'Unit',
+    displayName: 'Units Master',
+    singularName: 'Unit',
+    nameField: 'unitName',
+    searchFields: ['unitName', 'description'],
+    tableColumns: [
+      { header: 'Unit Name', accessor: 'unitName' },
+      { header: 'Multiplier Factor', accessor: 'multiplier' },
+      { header: 'Description', accessor: 'description' },
+      { header: 'Status', accessor: 'status' },
+    ],
+    defaultSort: { unitName: 1 },
+    dependencyModels: [
+      { model: 'Product', path: 'unit' },
+    ],
+  },
 };
 
 module.exports = MASTER_CONFIG;

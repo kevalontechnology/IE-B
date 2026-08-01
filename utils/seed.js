@@ -150,6 +150,20 @@ const seedData = async () => {
     }
     console.log('✅ Container Quantities Master Seeded');
 
+    // 8. Seed Units Master
+    const Unit = require('../models/Unit');
+    const defaultUnits = [
+      { unitName: 'KGS', multiplier: 1, description: 'Kilograms' },
+      { unitName: 'MTS', multiplier: 1000, description: 'Metric Tonnes' },
+      { unitName: 'PCS', multiplier: 1, description: 'Pieces' },
+      { unitName: 'BOXES', multiplier: 1, description: 'Boxes' },
+      { unitName: 'SET', multiplier: 2, description: 'Set (2 Pieces per set - doubles quantity automatically)' },
+    ];
+    for (const u of defaultUnits) {
+      await Unit.updateOne({ unitName: u.unitName }, { ...u, createdBy: admin._id, updatedBy: admin._id }, { upsert: true });
+    }
+    console.log('✅ Units Master Seeded (including SET multiplier x2)');
+
     // 8. Seed Countries & Currencies
     const defaultCountries = [
       { name: 'United States', code: 'US', currencyCode: 'USD' },
