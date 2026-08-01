@@ -1,11 +1,17 @@
 const shipmentRepo = require('../repositories/shipmentRepo');
 const Notification = require('../models/Notification');
+const sequenceService = require('./sequenceService');
 const { createAuditLog } = require('../middleware/auditMiddleware');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
 const { ROLES } = require('../constants/roles');
 
 class ShipmentService {
   async createShipment(data, req) {
+    // Automatically generate shipmentNumber if missing
+    if (!data.shipmentNumber) {
+      data.shipmentNumber = await sequenceService.getNextSequence('SHIPMENT', 'SHP-');
+    }
+
     // Unique Invoice Number Validation
     const existingInvoice = await shipmentRepo.findByInvoiceNumber(data.invoiceNumber);
     if (existingInvoice) {

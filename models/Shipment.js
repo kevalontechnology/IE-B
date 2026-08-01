@@ -19,6 +19,7 @@ const shipmentItemSchema = new mongoose.Schema({
 
 const shipmentSchema = new mongoose.Schema(
   {
+    shipmentNumber: { type: String, default: null, sparse: true, index: true },
     invoiceNumber: { type: String, required: true, unique: true, index: true },
     invoiceDate: { type: Date, default: Date.now },
     quotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation', default: null },
