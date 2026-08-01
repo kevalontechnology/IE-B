@@ -2,6 +2,8 @@ const shipmentService = require('../services/shipmentService');
 const { sendSuccess } = require('../utils/responseFormatter');
 const HTTP_STATUS = require('../constants/httpStatusCodes');
 
+const { ROLES } = require('../constants/roles');
+
 class ShipmentController {
   async create(req, res, next) {
     try {
@@ -14,7 +16,11 @@ class ShipmentController {
 
   async getAll(req, res, next) {
     try {
-      const result = await shipmentService.getShipments(req.query);
+      const query = { ...req.query };
+      if (req.user.role === ROLES.SALES) {
+        query.createdBy = req.user._id;
+      }
+      const result = await shipmentService.getShipments(query);
       return sendSuccess(res, 'Shipments fetched successfully.', result.shipments, {
         page: result.page,
         limit: result.limit,
